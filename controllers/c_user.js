@@ -25,6 +25,8 @@ const handleSignin=(req,res)=>{
 					message:'密码错误'
 				})
 			}
+			req.session.user=data[0]
+			// console.log(req.session.user)
 			res.send({
 				code:200,
 				message:'可以跳转了'
@@ -46,5 +48,58 @@ const handleSignin=(req,res)=>{
 	// })
 
 }
+const handleSignout=(req,res)=>{
+	delete req.session.user
+	res.redirect('/signin')
+}
+exports.showSignup=(req,res)=>{
+	res.render('signup.html')
+}
+exports.checkSignup=(req,res)=>{
+	const body=req.body
+	console.log(body)
+	m_user.checkEmail(body.email,(err,data)=>{
+		if(err){
+			return res.send({
+				code:500,
+				message:err.message
+			})
+		}
+		 if(data[0]){
+		 	return res.send({
+		 		code:1,
+		 		message:'邮箱已经存在'
+		 	})
+		 }
+		 m_user.checkSignupNickname(body.nickname,(err,data)=>{
+			 	if(err){
+					return res.send({
+						code:500,
+						message:err.message
+					})
+				}
+				if(data[0]){
+				 	return res.send({
+				 		code:2,
+				 		message:'昵称已经存在'
+				 	})
+		 		}
+		 		m_user.addUser(body,(err,data)=>{
+		 			if(err){
+						return res.send({
+							code:500,
+							message:err.message
+						})
+					}
+					res.send({
+						code:200,
+						message:'添加用户成功'
+					})
+		 		})
+		 })
+
+	})
+}
 exports.showSignin=showSignin
 exports.handleSignin=handleSignin
+exports.handleSignout=handleSignout
